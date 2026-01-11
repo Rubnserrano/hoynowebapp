@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoy NO fumo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: linear-gradient(180deg,#f5f6f7 0%, #eceff0 100%);
+            --container-bg: #ffffff;
+            --accent: #2b5f77; /* aesthetic blue */
+            --muted: #333333;
+            --border-color: rgba(0,0,0,0.06);
+            --particle-color: rgba(120,120,120,0.9);
+            --button-bg: #2b5f77;
+            --button-color: #ffffff;
+            --counter-color: #1f2933;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--muted);
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            max-width: 500px;
+            width: 90%;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 16px;
+            color: var(--muted);
+        }
+
+        .theme-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .counter-display {
+            font-size: 5em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--counter-color);
+        }
+
+        .click-btn {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 14px 30px;
+            background: var(--button-bg);
+            color: var(--button-color);
+            border: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: transform .1s ease, box-shadow .1s ease;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .click-btn:hover { transform: translateY(-2px); }
+
+        .click-btn.clicked { animation: btnPulse 0.3s ease-out; }
+
+        @keyframes btnPulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            min-height: 40px;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s, transform .3s;
+        }
+
+        .message.show { opacity: 1; transform: translateY(0); }
+
+        .reset-btn {
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            padding: 8px 12px;
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover { background: var(--accent); color: white; }
+
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+
+        .particle { position: absolute; width: 10px; height: 10px; background: var(--particle-color); border-radius: 50%; animation: rise 1s ease-out forwards; opacity: .9; }
+
+        @keyframes rise { 0% { opacity: 1; transform: translateY(0) scale(1);} 100% { opacity: 0; transform: translateY(-80px) scale(0);} }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <h1>HOY NO</h1>
+        <div class="subtitle">FUMO</div>
+
+        <div class="theme-controls">
+            <button class="reset-btn" id="useImageBtn">Usar imagen</button>
+            <input type="file" id="bgInput" accept="image/*" style="display:none" onchange="uploadBgImage(event)">
+            <button class="reset-btn" onclick="clearBgImage()">Borrar fondo</button>
+        </div>
+        
+        <div class="counter-display" id="counter">0</div>
+        
+        <button class="click-btn" id="clickBtn" onclick="resistTentacion()">HOY NO</button>
+        
+        <div class="message" id="message"></div>
+        
+        <button class="reset-btn" onclick="resetCounter()">Reiniciar contador</button>
+    </div>
+
+    <script>
+        const mensajes = [
+            "¡ERES UN CAMPEÓN!",
+            "¡SIGUE ASÍ!",
+            "¡IMPARABLE!",
+            "¡TÚ PUEDES!",
+            "¡BIEN HECHO!",
+            "¡ORGULLO!",
+            "¡FUERZA!",
+            "¡INCREÍBLE!",
+            "¡NO TE RINDAS!",
+            "¡LEYENDA!"
+        ];
+
+        let counter = 0;
+
+        function loadCounter() {
+            const saved = localStorage.getItem('hoyNoFumoCounter');
+            if (saved) {
+                counter = parseInt(saved);
+                document.getElementById('counter').textContent = counter;
+            }
+        }
+
+        function saveCounter() {
+            localStorage.setItem('hoyNoFumoCounter', counter.toString());
+        }
+
+        function resistTentacion() {
+            counter++;
+            document.getElementById('counter').textContent = counter;
+            saveCounter();
+            
+            const btn = document.getElementById('clickBtn');
+            btn.classList.add('clicked');
+            setTimeout(() => btn.classList.remove('clicked'), 300);
+            
+            const mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = mensaje;
+            msgEl.classList.add('show');
+            
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 2000);
+            
+            createParticles();
+        }
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = '50%';
+                particle.style.animationDelay = Math.random() * 0.3 + 's';
+                container.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        function resetCounter() {
+            if (confirm('¿Seguro que quieres reiniciar el contador?')) {
+                counter = 0;
+                document.getElementById('counter').textContent = counter;
+                saveCounter();
+            }
+        }
+
+        // Background image functions (simplified)
+        document.getElementById('useImageBtn')?.addEventListener('click', () => {
+            document.getElementById('bgInput').click();
+        });
+
+        function uploadBgImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.body.style.backgroundImage = `url('${dataUrl}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                localStorage.setItem('hoyNoFumoBgImage', dataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearBgImage() {
+            localStorage.removeItem('hoyNoFumoBgImage');
+            document.body.style.backgroundImage = '';
+        }
+
+        function loadSettings() {
+            const bg = localStorage.getItem('hoyNoFumoBgImage');
+            if (bg) {
+                document.body.style.backgroundImage = `url('${bg}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            }
+        }
+
+        loadSettings();
+        loadCounter();
+    </script>
+</body>
+</html>
